@@ -1,23 +1,13 @@
 package org.quiltmc.enigma.impl.translation.mapping;
 
-import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.StandardValidation;
 import org.quiltmc.enigma.util.validation.ValidationContext;
-
-import java.util.List;
 
 public final class IdentifierValidation {
 	private IdentifierValidation() {
 	}
 
-	private static final List<String> ILLEGAL_IDENTIFIERS = List.of(
-			"abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
-			"continue", "default", "do", "double", "else", "enum", "extends", "false", "final", "finally",
-			"float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long",
-			"native", "new", "null", "package", "private", "protected", "public", "return", "short", "static",
-			"strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try",
-			"void", "volatile", "while", "_"
-	);
+	private static final String ILLEGAL_CHARS = ".;[/<>:";
 
 	public static boolean validateClassName(ValidationContext vc, String name, boolean isInner) {
 		if (!StandardValidation.notBlank(vc, name)) return false;
@@ -38,39 +28,15 @@ public final class IdentifierValidation {
 
 	public static boolean validateIdentifier(ValidationContext vc, String name) {
 		if (!StandardValidation.notBlank(vc, name)) return false;
-		if (checkForReservedName(vc, name)) return false;
-
-		// Adapted from javax.lang.model.SourceVersion.isIdentifier
-
-		int cp = name.codePointAt(0);
-		int position = 1;
-		if (!Character.isJavaIdentifierStart(cp)) {
-			vc.raise(Message.ILLEGAL_IDENTIFIER, name, new String(Character.toChars(cp)), position);
-			return false;
-		}
-
-		for (int i = Character.charCount(cp); i < name.length(); i += Character.charCount(cp)) {
-			cp = name.codePointAt(i);
-			position += 1;
-			if (!Character.isJavaIdentifierPart(cp)) {
-				vc.raise(Message.ILLEGAL_IDENTIFIER, name, new String(Character.toChars(cp)), position);
+		for (int i = 0; i < name.length(); i++) {
+			if (ILLEGAL_CHARS.indexOf(name.charAt(i)) != -1) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
-	private static boolean checkForReservedName(ValidationContext vc, String name) {
-		if (isReservedMethodName(name)) {
-			vc.raise(Message.RESERVED_IDENTIFIER, name);
-			return true;
-		}
-
-		return false;
-	}
-
 	public static boolean isReservedMethodName(String name) {
-		return ILLEGAL_IDENTIFIERS.contains(name);
+		return false;
 	}
 }
